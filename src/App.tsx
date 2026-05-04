@@ -3,12 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Social from "./pages/Social";
+import Layout from "./components/Layout";
 import ChatPanel from "./components/ChatPanel";
 import { useState } from "react";
 
 const AppContent = () => {
   const { user, isLoading } = useAuth();
   const [showChat, setShowChat] = useState<boolean>(false); // default hidden
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -25,12 +28,12 @@ const AppContent = () => {
 
   return (
     <div className="h-screen flex overflow-hidden bg-brand-black text-white selection:bg-brand-pink/30 font-sans antialiased relative">
-      <main className="flex-1 overflow-auto relative">
-        <Routes>
-          <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-          <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/dashboard" element={user ? <Layout><Dashboard onRoomChange={setActiveRoomId} /></Layout> : <Navigate to="/" />} />
+        <Route path="/social" element={user ? <Layout><Social /></Layout> : <Navigate to="/" />} />
+      </Routes>
+      
       {/* Toggle button for ChatPanel */}
       {user && (
         <button
@@ -42,7 +45,12 @@ const AppContent = () => {
         </button>
       )}
       {/* Render ChatPanel when enabled */}
-      {user && showChat && <ChatPanel />}
+      {user && showChat && (
+        <ChatPanel 
+          onClose={() => setShowChat(false)} 
+          roomId={activeRoomId || undefined} 
+        />
+      )}
     </div>
   );
 };
