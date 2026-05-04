@@ -121,7 +121,7 @@ export const useWhiteboard = (roomId: string | undefined, accessToken: string | 
         ctx.beginPath();
         if (last) ctx.moveTo(last.x, last.y);
         else ctx.moveTo(points[0].x, points[0].y);
-        points.forEach(p => ctx.lineTo(p.x, p.y));
+        points.forEach((p: Point) => ctx.lineTo(p.x, p.y));
         ctx.stroke();
         ctx.restore();
         remoteStrokesRef.current[user_id] = points[points.length-1];

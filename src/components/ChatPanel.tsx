@@ -12,7 +12,7 @@ interface ChatPanelProps {
 const ChatPanel: React.FC<ChatPanelProps> = ({ onClose, roomId }) => {
   const { user, accessToken } = useAuth();
   const [activeTab, setActiveTab] = useState<'chat' | 'friends'>('chat');
-  const { messages, sendMessage, scrollRef, isRoomChat, setIsRoomChat, selectedUser, setSelectedUser } = useChat(roomId, user, accessToken);
+  const { messages, sendMessage, scrollRef, setIsRoomChat, selectedUser, setSelectedUser } = useChat(roomId, user, accessToken);
 
   // Friends/Users State
   const [friends, setFriends] = useState<any[]>([]);
