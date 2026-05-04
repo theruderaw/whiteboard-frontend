@@ -7,20 +7,17 @@ const Social: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<{ id: string; username: string } | null>(null);
 
   return (
-    <div className="flex flex-col h-screen w-full px-8 py-8 bg-brand-black text-white font-sans selection:bg-brand-pink/30 antialiased overflow-hidden">
-      {/* Social Content */}
-      <div className="flex flex-1 gap-8 min-h-0 overflow-hidden mb-4">
-        {/* Sidebar */}
-        <aside className="w-80 flex flex-col shrink-0 animate-in fade-in slide-in-from-left duration-700 delay-100">
-          <UserSearch onSelectUser={setSelectedUser} />
-          <FriendsList onSelectFriend={setSelectedUser} selectedFriendId={selectedUser?.id} />
-        </aside>
+    <div className="flex h-screen w-full bg-brand-black text-white font-sans selection:bg-brand-pink/30 antialiased overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-96 flex flex-col shrink-0 border-r border-white/5 bg-white/[0.01] px-8 py-8 animate-in fade-in slide-in-from-left duration-700">
+        <UserSearch onSelectUser={setSelectedUser} />
+        <FriendsList onSelectFriend={setSelectedUser} selectedFriendId={selectedUser?.id} />
+      </aside>
 
-        {/* Main Chat Area */}
-        <main className="flex-1 flex flex-col min-w-0">
-          <ChatWindow selectedUser={selectedUser} />
-        </main>
-      </div>
+      {/* Main Chat Area */}
+      <main className="flex-1 flex flex-col min-w-0 bg-brand-black">
+        <ChatWindow selectedUser={selectedUser} />
+      </main>
     </div>
   );
 };
