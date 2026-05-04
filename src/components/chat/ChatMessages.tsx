@@ -12,7 +12,7 @@ interface ChatMessagesProps {
   messages: Message[];
   currentUserId?: string;
   isRoomChat: boolean;
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, currentUserId, isRoomChat, scrollRef }) => {
