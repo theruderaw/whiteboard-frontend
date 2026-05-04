@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-pink: #ee2689;
+  --color-brand-berry: #a91263;
+  --color-brand-navy: #1b2268;
+  --color-brand-blue: #0351a3;
+  --color-brand-black: #000000;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
-  background-color: #111827; /* dark gray */
+  background-color: var(--color-brand-black);
   color: white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
