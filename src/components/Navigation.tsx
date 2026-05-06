@@ -29,9 +29,9 @@ const Navigation: React.FC = () => {
             className={`group relative p-4 rounded-2xl transition-all duration-300 
               ${location.pathname === item.path 
                 ? "bg-brand-pink/10 text-brand-pink" 
-                : "text-white/20 hover:text-white/50 hover:bg-white/5"}`}
+                : "text-white/60 hover:text-white hover:bg-white/5"}`}
           >
-            <span className="text-xl">{item.icon}</span>
+            <span className="text-xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">{item.icon}</span>
             {location.pathname === item.path && (
               <div className="absolute left-0 top-2 bottom-2 w-1 bg-brand-pink rounded-r-full shadow-[0_0_10px_rgba(255,51,102,0.5)]" />
             )}

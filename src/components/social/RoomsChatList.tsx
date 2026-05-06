@@ -65,7 +65,7 @@ const RoomsChatList: React.FC<RoomsChatListProps> = ({ onSelectRoom, selectedRoo
         ))}
         {rooms.length === 0 && (
           <div className="text-center py-8 px-4 bg-white/[0.01] rounded-2xl border border-dashed border-white/5">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/20">No active rooms</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-white/50">No active rooms</p>
           </div>
         )}
       </div>
