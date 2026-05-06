@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export const WhiteboardToolbar = ({ tool, size, color, votes, members }: any) => (
   <div className="flex items-center gap-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 shadow-xl pointer-events-auto">

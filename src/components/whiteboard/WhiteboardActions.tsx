@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export const WhiteboardActions = ({ onExport, onImport, onPNG, isAdmin, onClear }: any) => (
   <div className="flex items-center gap-3 pointer-events-auto">

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWhiteboard } from '../hooks/whiteboard/useWhiteboard';
 import { ColorPalette } from './whiteboard/ColorPalette';
@@ -18,13 +18,15 @@ const Whiteboard = ({ roomId }: { roomId?: string }) => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'h') setTool('eraser');
       if (e.key === 'p') setTool('pen');
+      if (e.key === 'ArrowUp') setSize(prev => Math.min(prev + 0.5, 20));
+      if (e.key === 'ArrowDown') setSize(prev => Math.max(prev - 0.5, 0.5));
       const colors: any = { b:'#000', w:'#fff', r:'#f44', g:'#0c5', y:'#fb3', B:'#09c', G:'#999', p:'#e26', o:'#f80', v:'#92b', t:'#088', l:'#3c3' };
       if (colors[e.key]) { setColor(colors[e.key]); setTool('pen'); }
       if (e.key === 'Escape') { if (Date.now() - escAt.current < 500) castResetVote(); escAt.current = Date.now(); }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [setTool, setColor, castResetVote]);
+  }, [setTool, setSize, setColor, castResetVote]);
 
   return (
     <div className="flex-1 flex items-center justify-center p-8 bg-black/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 relative overflow-hidden">
