@@ -114,26 +114,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
           <button 
             onClick={() => setShowChat(!showChat)}
             className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-xl
-              ${showChat ? "bg-brand-pink text-white shadow-brand-pink/20" : "bg-white/5 text-white/40 hover:text-white border border-white/10"}`}
+              ${showChat ? "bg-brand-pink text-white shadow-brand-pink/20" : "bg-white/10 text-white/80 hover:text-white border border-white/20"}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
             Chat
           </button>
           <button 
             onClick={() => setShowMembers(!showMembers)}
             className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-xl
-              ${showMembers ? "bg-brand-pink text-white shadow-brand-pink/20" : "bg-white/5 text-white/40 hover:text-white border border-white/10"}`}
+              ${showMembers ? "bg-brand-pink text-white shadow-brand-pink/20" : "bg-white/10 text-white/80 hover:text-white border border-white/20"}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
             Members
           </button>
           <Link 
             to="/social"
-            className="flex items-center gap-3 bg-brand-navy text-white/60 hover:text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-white/10 hover:border-white/20 transition-all active:scale-95"
+            className="flex items-center gap-3 bg-brand-navy text-white/80 hover:text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-white/20 hover:border-white/40 transition-all active:scale-95 shadow-lg shadow-black/20"
           >
             Social Hub
           </Link>

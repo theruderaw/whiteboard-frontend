@@ -65,7 +65,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onSelectUser }) => {
             placeholder="Search by username..."
             className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-pink focus:bg-white/[0.05] transition-all"
           />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>

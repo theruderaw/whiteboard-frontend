@@ -44,9 +44,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ onClose, roomId }) => {
         >
           Direct Messages
         </button>
-        <button onClick={onClose} className="px-4 text-white/30 hover:text-white">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <button onClick={onClose} className="px-4 text-white/60 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -64,10 +64,13 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ onClose, roomId }) => {
           {selectedUser ? (
             <>
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                <button onClick={() => { setSelectedUser(null); setIsRoomChat(true); }} className="text-[9px] font-black uppercase text-white/40 hover:text-white flex items-center gap-1">
-                  ← Back to List
+                <button onClick={() => { setSelectedUser(null); setIsRoomChat(true); }} className="text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white flex items-center gap-2 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back to List
                 </button>
-                <span className="text-xs font-bold">@{selectedUser.username}</span>
+                <span className="text-xs font-bold text-white">@{selectedUser.username}</span>
               </div>
               <ChatMessages messages={messages} currentUserId={user?.id} isRoomChat={false} scrollRef={scrollRef} />
               <ChatInput onSendMessage={sendMessage} placeholder={`Message @${selectedUser.username}...`} />

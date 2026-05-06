@@ -134,8 +134,8 @@ const FriendsList: React.FC<FriendsListProps> = ({ onSelectFriend, selectedFrien
           ))}
           {friends.length === 0 && (
             <div className="text-center py-16 px-6 bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
-              <div className="text-3xl mb-4 opacity-20">📭</div>
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Your network is empty</div>
+              <div className="text-3xl mb-4 opacity-50 grayscale-0">📭</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">Your network is empty</div>
             </div>
           )}
         </div>
