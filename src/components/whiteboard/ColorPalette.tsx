@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const COLORS = [
   { val: '#000000', k: 'b' }, { val: '#ffffff', k: 'w' }, { val: '#ff4444', k: 'r' },
