@@ -35,22 +35,64 @@ export const useChat = (roomId: string | undefined, user: any, accessToken: stri
 
   useEffect(() => {
     if (!user?.id || !accessToken) return;
-    const socket = new WebSocket(`${WS_URL}/ws/chat/${user.id}`);
-    chatSocketRef.current = socket;
 
-    socket.onopen = () => {
-      if (roomId) socket.send(JSON.stringify({ type: "join_room", room_id: roomId }));
+    let reconnectTimeoutId: any = null;
+    let reconnectAttempts = 0;
+    let socket: WebSocket | null = null;
+    let isDestroyed = false;
+
+    const connect = () => {
+      if (isDestroyed) return;
+
+      console.log(`[Chat] Connecting socket for user ${user.id}, attempt: ${reconnectAttempts + 1}`);
+      socket = new WebSocket(`${WS_URL}/ws/chat/${user.id}`);
+      chatSocketRef.current = socket;
+
+      socket.onopen = () => {
+        console.log("[Chat] Socket connected successfully.");
+        reconnectAttempts = 0;
+        if (roomId) {
+          socket?.send(JSON.stringify({ type: "join_room", room_id: roomId }));
+        }
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'chat') {
+            if (msg.room_id) setRoomMessages(prev => [...prev, msg.data]);
+            else setMessages(prev => [...prev, msg.data]);
+          }
+        } catch (e) { console.error("[Chat] Parse error:", e); }
+      };
+
+      socket.onerror = (err) => {
+        console.warn("[Chat] WebSocket Error:", err);
+      };
+
+      socket.onclose = (event) => {
+        if (isDestroyed) return;
+        console.warn(`[Chat] WebSocket Closed. Code: ${event.code}. Reconnecting in backoff delay...`);
+        
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+        reconnectAttempts++;
+        reconnectTimeoutId = setTimeout(connect, delay);
+      };
     };
 
-    socket.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === 'chat') {
-        if (msg.room_id) setRoomMessages(prev => [...prev, msg.data]);
-        else setMessages(prev => [...prev, msg.data]);
+    connect();
+
+    return () => {
+      isDestroyed = true;
+      clearTimeout(reconnectTimeoutId);
+      if (socket) {
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.close();
       }
+      chatSocketRef.current = null;
     };
-    return () => socket.close();
-  }, [user?.id, roomId, accessToken]);
+  }, [user?.id, roomId, accessToken, WS_URL]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });

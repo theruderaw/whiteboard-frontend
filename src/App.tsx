@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
@@ -5,20 +6,36 @@ import Dashboard from "./pages/Dashboard";
 import Social from "./pages/Social";
 import Layout from "./components/Layout";
 
+const LoadingScreen = () => {
+  const [showWakeNote, setShowWakeNote] = useState(false);
+  
+  useEffect(() => {
+    const t = setTimeout(() => setShowWakeNote(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-brand-black">
+      <div className="relative mb-8">
+        <div className="h-24 w-24 rounded-full border-t-4 border-brand-pink animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.3em] text-brand-pink/50">
+          Booting
+        </div>
+      </div>
+      {showWakeNote && (
+        <div className="animate-pulse text-[10px] text-white/30 uppercase font-black tracking-[0.2em] px-8 text-center max-w-xs leading-relaxed">
+          Backend is sleeping.<br/>Waking it up, please stand by...
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AppContent = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-brand-black">
-        <div className="relative">
-          <div className="h-24 w-24 rounded-full border-t-4 border-brand-pink animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.3em] text-brand-pink/50">
-            Booting
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
