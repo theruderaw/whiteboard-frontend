@@ -5,7 +5,9 @@ import Whiteboard from "../components/Whiteboard";
 import ChatPanel from "../components/ChatPanel";
 import MemberPanel from "../components/MemberPanel";
 import { FloatingPanel } from "../components/ui/FloatingPanel";
-import { useWhiteboard } from "../hooks/whiteboard/useWhiteboard";
+import { useWhiteboardManager } from "../hooks/whiteboard/useWhiteboardManager";
+import { apiClient } from "../lib/apiClient";
+
 import { WhiteboardToolbar } from "../components/whiteboard/WhiteboardToolbar";
 import { WhiteboardActions } from "../components/whiteboard/WhiteboardActions";
 import { ToolSelector } from "../components/whiteboard/ToolSelector";
@@ -25,11 +27,41 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
   const [newRoomName, setNewRoomName] = useState("");
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+  // 1. Pure Reactive Frontend State 
+  const [tool, setTool] = useState<'pen' | 'hand' | 'eraser'>('pen');
+  const [size, setSize] = useState<number>(1.0);
+  const [color, setColor] = useState<string>('#ee2689');
+  const [zoomSpeed, setZoomSpeed] = useState<number>(1.0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // 2. Instantiate Headless Architecture
   const { 
-    canvasRef, tool, setTool, size, setSize, color, setColor, isAdmin, 
-    clearCanvas, downloadPNG, startDrawing, draw, finishDrawing,
-    exportJSON, importJSON 
-  } = useWhiteboard(currentRoom?.id, accessToken, user);
+    canvasRef, manager, clear, download, exportJSON, importJSON 
+  } = useWhiteboardManager(currentRoom?.id, user?.id);
+
+
+
+  // 3. Synchronize React State to Persistent Manager Instance
+  useEffect(() => {
+    if (!manager) return;
+    manager.currentTool = tool;
+    manager.currentSize = size;
+    manager.currentColor = color;
+    manager.zoomSpeed = zoomSpeed;
+  }, [manager, tool, size, color, zoomSpeed]);
+
+  // 4. Admin Permission Watcher
+  useEffect(() => {
+    if (!currentRoom?.id) { setIsAdmin(false); return; }
+    apiClient(`/rooms/${currentRoom.id}/members`)
+      .then(r => r.json())
+      .then(members => {
+        const me = members.find((m: any) => m.user_id === user?.id);
+        setIsAdmin(me?.role === 'admin');
+      }).catch(() => setIsAdmin(false));
+  }, [currentRoom?.id, user?.id]);
+
+
   const escAt = useRef(0);
 
   useEffect(() => {
@@ -37,20 +69,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
       if (e.key === 'h') setTool('hand');
       if (e.key === 'e') setTool('eraser');
       if (e.key === 'p') setTool('pen');
-      if (e.key === 'ArrowUp') setSize(prev => Math.min(prev + 0.5, 20));
+      if (e.key === 'ArrowUp') setSize(prev => Math.min(prev + 0.5, 25));
       if (e.key === 'ArrowDown') setSize(prev => Math.max(prev - 0.5, 0.5));
       const colors: any = { b:'#000', w:'#fff', r:'#f44', g:'#0c5', y:'#fb3', B:'#09c', G:'#999', p:'#e26', o:'#f80', v:'#92b', t:'#088', l:'#3c3' };
       if (colors[e.key]) { setColor(colors[e.key]); setTool('pen'); }
       if (e.key === 'Escape' && isAdmin) { 
         if (Date.now() - escAt.current < 500) {
-          clearCanvas();
+          clear();
         } 
         escAt.current = Date.now(); 
       }
+
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [setTool, setSize, setColor, isAdmin, clearCanvas]);
+  }, [setTool, setSize, setColor, isAdmin, clear]);
 
   const fetchRooms = async () => {
     console.log("Fetching rooms from:", `${API_URL}/rooms/`);
@@ -226,9 +259,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
               <Whiteboard 
                 canvasRef={canvasRef}
                 tool={tool}
-                startDrawing={startDrawing}
-                draw={draw}
-                finishDrawing={finishDrawing}
               />
             </FloatingPanel>
 
@@ -238,7 +268,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
               title="Status" 
               defaultPosition={{ x: 70, y: 40 }}
             >
-              <WhiteboardToolbar {...{ tool, size, color }} />
+              <WhiteboardToolbar {...{ tool, size, color, setSize, zoomSpeed, setZoomSpeed }} />
+
             </FloatingPanel>
 
             {/* Panel 2: Tools */}
@@ -260,10 +291,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onRoomChange }) => {
                 <WhiteboardActions 
                   onExport={exportJSON} 
                   onImport={importJSON} 
-                  onPNG={downloadPNG} 
+                  onPNG={download} 
                   isAdmin={isAdmin} 
-                  onClear={clearCanvas} 
+                  onClear={clear} 
                 />
+
               </div>
             </FloatingPanel>
 

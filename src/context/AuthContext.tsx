@@ -13,55 +13,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ── Token Helpers ─────────────────────────────────────────────────
-const getCookie = (name: string) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-  return null;
-};
+import { saveToken, loadStoredToken, clearStorageTokens } from "../lib/authHelpers";
 
-const saveToken = (token: string, always: boolean) => {
-  if (always) {
-    // Option A: Persistent Cookie (7 days)
-    document.cookie = `wb_at_perm=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
-    // Cleanup temp
-    localStorage.removeItem("wb_at");
-    document.cookie = "wb_at_sentinel=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-  } else {
-    // Option B: LocalStorage + Session Cookie Sentinel (survives nav, dies on browser quit)
-    localStorage.setItem("wb_at", token);
-    document.cookie = "wb_at_sentinel=1; path=/; samesite=lax"; // No max-age = Session Cookie
-    // Cleanup perm
-    document.cookie = "wb_at_perm=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-  }
-};
-
-const loadStoredToken = (): string | null => {
-  // 1. Check persistent cookie
-  const perm = getCookie("wb_at_perm");
-  if (perm) return perm;
-
-  // 2. Check LocalStorage + Sentinel
-  const stored = localStorage.getItem("wb_at");
-  const sentinel = getCookie("wb_at_sentinel");
-
-  if (stored) {
-    if (sentinel) {
-      return stored; // Valid session
-    } else {
-      // Browser was quit, sentinel is gone, cleanup
-      localStorage.removeItem("wb_at");
-    }
-  }
-  return null;
-};
-
-const clearStorageTokens = () => {
-  localStorage.removeItem("wb_at");
-  document.cookie = "wb_at_sentinel=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-  document.cookie = "wb_at_perm=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
