@@ -53,37 +53,59 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
   // Setup initial configuration
   const config: RequestInit = { ...options, headers };
   
-  try {
-    let response = await fetch(url, config);
-    
-    // Intercept 401 and attempt recovery flow
-    if (response.status === 401) {
-      if (!isRefreshing) {
-        isRefreshing = true;
-        const newToken = await tryRefresh();
-        isRefreshing = false;
-        
-        if (newToken) {
-          onRefreshed(newToken);
-        } else {
-          // Final death - fully unauthorized
-          refreshSubscribers = [];
-          return response; 
+  const maxRetries = 3;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    try {
+      let response = await fetch(url, config);
+      
+      // If server is warming up (502, 503, 504), retry after delay
+      if ([502, 503, 504].includes(response.status) && attempt < maxRetries - 1) {
+        attempt++;
+        const delay = 2000 * attempt;
+        console.warn(`Server warming up (${response.status}). Retrying API call in ${delay}ms (Attempt ${attempt})...`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      // Intercept 401 and attempt recovery flow
+      if (response.status === 401) {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          const newToken = await tryRefresh();
+          isRefreshing = false;
+          
+          if (newToken) {
+            onRefreshed(newToken);
+          } else {
+            // Final death - fully unauthorized
+            refreshSubscribers = [];
+            return response; 
+          }
         }
+        
+        // Await the existing/pending refresh cycle promise and retry
+        const retryPromise = new Promise<Response>((resolve) => {
+          subscribeTokenRefresh((newToken) => {
+            headers.set("Authorization", `Bearer ${newToken}`);
+            resolve(fetch(url, { ...options, headers }));
+          });
+        });
+        return await retryPromise;
       }
       
-      // Await the existing/pending refresh cycle promise and retry
-      const retryPromise = new Promise<Response>((resolve) => {
-        subscribeTokenRefresh((newToken) => {
-          headers.set("Authorization", `Bearer ${newToken}`);
-          resolve(fetch(url, { ...options, headers }));
-        });
-      });
-      return await retryPromise;
+      return response;
+    } catch (error) {
+      attempt++;
+      if (attempt >= maxRetries) {
+        throw error;
+      }
+      const delay = 2000 * attempt;
+      console.warn(`API Fetch failed. Retrying in ${delay}ms (Attempt ${attempt})...`, error);
+      await new Promise(r => setTimeout(r, delay));
     }
-    
-    return response;
-  } catch (error) {
-    throw error;
   }
+
+  throw new Error("Max retries reached for API call");
 };

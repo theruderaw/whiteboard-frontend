@@ -89,7 +89,12 @@ export class WhiteboardManager {
 
   public destroy() {
     this.unbind();
-    this.socket?.close();
+    if (this.reconnectTimeoutId) clearTimeout(this.reconnectTimeoutId);
+    if (this.socket) {
+      this.socket.onclose = null;
+      this.socket.onerror = null;
+      this.socket.close();
+    }
   }
 
 
@@ -124,9 +129,25 @@ export class WhiteboardManager {
     } catch (e) { console.error("History load failure:", e); }
   }
 
+  private reconnectAttempts = 0;
+  private reconnectTimeoutId: any = null;
+
   private connectSocket() {
+    if (this.socket) {
+      this.socket.onclose = null;
+      this.socket.onerror = null;
+      this.socket.onmessage = null;
+      this.socket.close();
+    }
+
+    console.log(`[Whiteboard] Connecting socket, attempt: ${this.reconnectAttempts + 1}`);
     const ws = new WebSocket(`${WS_URL}/ws/${this.roomId}`);
     this.socket = ws;
+
+    ws.onopen = () => {
+      console.log("[Whiteboard] Socket Connected successfully.");
+      this.reconnectAttempts = 0;
+    };
 
     ws.onmessage = (evt) => {
       try {
@@ -150,6 +171,19 @@ export class WhiteboardManager {
           this.redraw();
         }
       } catch { }
+    };
+
+    ws.onerror = (err) => {
+      console.warn("[Whiteboard] Socket Error:", err);
+    };
+
+    ws.onclose = (event) => {
+      console.warn(`[Whiteboard] Socket Closed. Code: ${event.code}. Will attempt reconnect...`);
+      if (this.reconnectAttempts < 10) {
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+        this.reconnectAttempts++;
+        this.reconnectTimeoutId = setTimeout(() => this.connectSocket(), delay);
+      }
     };
   }
 
