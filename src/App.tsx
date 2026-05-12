@@ -1,17 +1,12 @@
-// src/App.tsx - cleaned version with toggleable ChatPanel (default hidden)
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Social from "./pages/Social";
 import Layout from "./components/Layout";
-import ChatPanel from "./components/ChatPanel";
-import { useState } from "react";
 
 const AppContent = () => {
   const { user, isLoading } = useAuth();
-  const [showChat, setShowChat] = useState<boolean>(false); // default hidden
-  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -27,30 +22,12 @@ const AppContent = () => {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-brand-black text-white selection:bg-brand-pink/30 font-sans antialiased relative">
+    <div className="h-screen w-screen w-full flex flex-col overflow-hidden bg-brand-black text-white selection:bg-brand-pink/30 font-sans antialiased relative">
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/dashboard" element={user ? <Layout><Dashboard onRoomChange={setActiveRoomId} /></Layout> : <Navigate to="/" />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <div className="flex-1 flex items-center justify-center p-4"><Login /></div>} />
+        <Route path="/dashboard" element={user ? <Layout><Dashboard /></Layout> : <Navigate to="/" />} />
         <Route path="/social" element={user ? <Layout><Social /></Layout> : <Navigate to="/" />} />
       </Routes>
-      
-      {/* Toggle button for ChatPanel */}
-      {user && (
-        <button
-          onClick={() => setShowChat((prev) => !prev)}
-          className="fixed bottom-4 right-4 z-50 p-3 rounded-full bg-brand-pink hover:bg-brand-berry transition-colors shadow-lg"
-          title={showChat ? "Hide Chat" : "Show Chat"}
-        >
-          {showChat ? "✕" : "💬"}
-        </button>
-      )}
-      {/* Render ChatPanel when enabled */}
-      {user && showChat && (
-        <ChatPanel 
-          onClose={() => setShowChat(false)} 
-          roomId={activeRoomId || undefined} 
-        />
-      )}
     </div>
   );
 };
