@@ -14,10 +14,9 @@ interface User {
 
 interface MemberPanelProps {
   roomId: string;
-  onClose: () => void;
 }
 
-const MemberPanel: React.FC<MemberPanelProps> = ({ roomId, onClose }) => {
+const MemberPanel: React.FC<MemberPanelProps> = ({ roomId }) => {
   const { accessToken } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,9 +65,6 @@ const MemberPanel: React.FC<MemberPanelProps> = ({ roomId, onClose }) => {
       if (res.ok) {
         setSearchQuery("");
         fetchMembers();
-      } else {
-        const err = await res.json();
-        alert(err.detail || "Failed to add member");
       }
     } catch (err) {
       console.error("Add member failed", err);
@@ -88,39 +84,24 @@ const MemberPanel: React.FC<MemberPanelProps> = ({ roomId, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[320px] bg-black/90 backdrop-blur-2xl border-l border-white/10 flex flex-col z-[60] animate-in slide-in-from-right duration-500 shadow-2xl">
-      <div className="p-6 border-b border-white/10 flex items-center justify-between">
-        <h2 className="text-sm font-black uppercase tracking-widest text-brand-pink">Room Members</h2>
-        <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="p-6 flex-1 overflow-y-auto space-y-8">
-        {/* Add Member Search */}
-        <div className="space-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30">Invite Collaborator</h3>
-          <div className="relative group">
+    <div className="w-[320px] h-[450px] flex flex-col relative overflow-hidden">
+      <div className="p-4 flex-1 overflow-y-auto space-y-6 min-h-0">
+        <div className="space-y-2">
+          <h3 className="text-[9px] font-black uppercase tracking-widest text-white/30">Invite</h3>
+          <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by username..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-brand-pink transition-all"
+              placeholder="Username..."
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-pink transition-all"
             />
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-brand-navy border border-white/10 rounded-xl shadow-2xl z-[70] overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-brand-navy border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden">
                 {searchResults.map(u => (
-                  <div key={u.id} className="flex items-center justify-between px-4 py-3 border-b border-white/5 hover:bg-white/10 transition-colors">
+                  <div key={u.id} className="flex items-center justify-between px-3 py-2 border-b border-white/5 hover:bg-white/10">
                     <span className="text-xs">@{u.username}</span>
-                    <button
-                      onClick={() => addMember(u.id)}
-                      className="text-[10px] font-black uppercase tracking-widest text-brand-pink hover:text-brand-berry"
-                    >
-                      Invite
-                    </button>
+                    <button onClick={() => addMember(u.id)} className="text-[9px] font-black text-brand-pink uppercase">Add</button>
                   </div>
                 ))}
               </div>
@@ -128,28 +109,19 @@ const MemberPanel: React.FC<MemberPanelProps> = ({ roomId, onClose }) => {
           </div>
         </div>
 
-        {/* Members List */}
-        <div className="space-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30">Active Members ({members.length})</h3>
-          <div className="space-y-3">
+        <div className="space-y-3">
+          <h3 className="text-[9px] font-black uppercase tracking-widest text-white/30">Active ({members.length})</h3>
+          <div className="space-y-2">
             {members.map(m => (
               <div key={m.user_id} className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-brand-pink/10 flex items-center justify-center text-xs font-black text-brand-pink border border-brand-pink/20">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-md bg-brand-pink/10 flex items-center justify-center text-[10px] font-black text-brand-pink">
                     {m.username[0].toUpperCase()}
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-white/90">@{m.username}</p>
-                    <p className="text-[9px] font-black uppercase tracking-tighter text-white/20">{m.role}</p>
-                  </div>
+                  <span className="text-xs font-bold text-white/90">@{m.username}</span>
                 </div>
                 {m.role !== 'admin' && (
-                  <button
-                    onClick={() => removeMember(m.user_id)}
-                    className="text-[9px] font-black uppercase tracking-widest text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-400"
-                  >
-                    Remove
-                  </button>
+                  <button onClick={() => removeMember(m.user_id)} className="text-[9px] uppercase font-black text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all">X</button>
                 )}
               </div>
             ))}

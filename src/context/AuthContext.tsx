@@ -6,12 +6,15 @@ interface AuthContextType {
   user: any;
   accessToken: string | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, alwaysLoggedIn?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   error: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+import { saveToken, loadStoredToken, clearStorageTokens } from "../lib/authHelpers";
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
@@ -27,18 +30,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        return true;
       } else {
         setAccessToken(null);
         setUser(null);
+        clearStorageTokens();
+        return false;
       }
     } catch (err) {
       console.error("Fetch user failed", err);
+      return false;
     }
   };
 
   const recoverSession = async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/refresh`, { method: "POST" });
+      // Step 1: Check explicit storage (Requested overrides)
+      const storedToken = loadStoredToken();
+      if (storedToken) {
+        setAccessToken(storedToken);
+        const success = await fetchUser(storedToken);
+        if (success) {
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Step 2: Fallback to HttpOnly Refresh if set
+      const res = await fetch(`${API_URL}/auth/refresh`, { 
+        method: "POST",
+        credentials: "include" 
+      });
       if (res.ok) {
         const data = await res.json();
         setAccessToken(data.access_token);
@@ -55,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recoverSession();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, alwaysLoggedIn: boolean = false) => {
     setError("");
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
@@ -66,6 +88,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (res.ok) {
         const data = await res.json();
+        
+        // Store token based on chosen strategy
+        saveToken(data.access_token, alwaysLoggedIn);
+        
         setAccessToken(data.access_token);
         await fetchUser(data.access_token);
       } else {
@@ -81,10 +107,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch(`${API_URL}/auth/logout`, { method: "POST" });
+      await fetch(`${API_URL}/auth/logout`, { method: "POST", credentials: "include" });
     } finally {
       setUser(null);
       setAccessToken(null);
+      clearStorageTokens();
     }
   };
 

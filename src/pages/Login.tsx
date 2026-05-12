@@ -5,13 +5,14 @@ const Login = () => {
   const { login, error, isLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [alwaysLoggedIn, setAlwaysLoggedIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login(username, password);
+      await login(username, password, alwaysLoggedIn);
     } catch (err) {
       // Error is handled by context
     } finally {
@@ -76,6 +77,23 @@ const Login = () => {
               required
             />
           </div>
+
+          <label className="flex items-center gap-3 cursor-pointer group/check px-2 select-none">
+            <div className="relative flex items-center justify-center">
+              <input 
+                type="checkbox"
+                className="peer sr-only"
+                checked={alwaysLoggedIn}
+                onChange={(e) => setAlwaysLoggedIn(e.target.checked)}
+              />
+              <div className="w-5 h-5 rounded-md border border-white/10 bg-black/30 peer-checked:bg-brand-pink/20 peer-checked:border-brand-pink/50 transition-all group-hover/check:border-white/30 shadow-inner flex items-center justify-center overflow-hidden">
+                <svg className={`w-3 h-3 text-brand-pink transition-transform duration-200 ${alwaysLoggedIn ? 'scale-100' : 'scale-0'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 group-hover/check:text-white/60 transition-colors">Always Stay Signed In</span>
+          </label>
 
           {error && (
             <div className="p-4 rounded-2xl bg-brand-berry/10 border border-brand-berry/30 text-brand-pink text-[11px] font-bold text-center uppercase tracking-widest animate-pulse">

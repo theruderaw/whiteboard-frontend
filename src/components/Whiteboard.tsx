@@ -1,45 +1,18 @@
-import { useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useWhiteboard } from '../hooks/whiteboard/useWhiteboard';
-import { ColorPalette } from './whiteboard/ColorPalette';
-import { WhiteboardToolbar } from './whiteboard/WhiteboardToolbar';
-import { WhiteboardActions } from './whiteboard/WhiteboardActions';
+import React from 'react';
 
-const Whiteboard = ({ roomId }: { roomId?: string }) => {
-  const { user, accessToken } = useAuth();
-  const { 
-    canvasRef, tool, setTool, size, setSize, color, setColor, isAdmin, 
-    clearCanvas, downloadPNG, startDrawing, draw, finishDrawing,
-    castResetVote, votes, members, exportJSON, importJSON 
-  } = useWhiteboard(roomId, accessToken, user);
-  const escAt = useRef(0);
+interface WhiteboardProps {
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  tool: string;
+}
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'h') setTool('eraser');
-      if (e.key === 'p') setTool('pen');
-      if (e.key === 'ArrowUp') setSize(prev => Math.min(prev + 0.5, 20));
-      if (e.key === 'ArrowDown') setSize(prev => Math.max(prev - 0.5, 0.5));
-      const colors: any = { b:'#000', w:'#fff', r:'#f44', g:'#0c5', y:'#fb3', B:'#09c', G:'#999', p:'#e26', o:'#f80', v:'#92b', t:'#088', l:'#3c3' };
-      if (colors[e.key]) { setColor(colors[e.key]); setTool('pen'); }
-      if (e.key === 'Escape') { if (Date.now() - escAt.current < 500) castResetVote(); escAt.current = Date.now(); }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [setTool, setSize, setColor, castResetVote]);
-
+const Whiteboard: React.FC<WhiteboardProps> = ({ canvasRef, tool }) => {
   return (
-    <div className="flex-1 flex items-center justify-center p-8 bg-black/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 relative overflow-hidden">
-      <div className="absolute top-8 left-8 right-8 z-10 flex items-center justify-between pointer-events-none">
-        <WhiteboardToolbar {...{ tool, size, color, votes, members }} />
-        <WhiteboardActions onExport={exportJSON} onImport={importJSON} onPNG={downloadPNG} isAdmin={isAdmin} onClear={clearCanvas} />
-      </div>
-      <div className="relative w-full h-full flex flex-col items-center justify-center gap-6">
-        <canvas ref={canvasRef} onMouseDown={startDrawing} onMouseUp={finishDrawing} onMouseMove={draw} onTouchStart={startDrawing} onTouchEnd={finishDrawing} onTouchMove={draw}
-          className="bg-brand-black shadow-2xl cursor-crosshair touch-none border-2 border-white/20 rounded-[2rem] transition-all hover:border-brand-pink/40"
-          style={{ aspectRatio: '1/1', maxWidth: '100%', maxHeight: 'calc(100% - 100px)' }} />
-        <ColorPalette active={color} onSelect={setColor} />
-      </div>
+    <div className="w-full h-full relative bg-brand-black overflow-hidden select-none">
+      <canvas 
+        ref={canvasRef} 
+        onContextMenu={(e) => e.preventDefault()}
+        className={`w-full h-full relative z-20 block ${tool === 'hand' ? 'cursor-grab active:cursor-grabbing' : 'cursor-crosshair'}`}
+      />
     </div>
   );
 };
