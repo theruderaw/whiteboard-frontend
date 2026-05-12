@@ -147,7 +147,7 @@ export const useWhiteboard = (roomId: string | undefined, accessToken: string | 
       canvas.removeEventListener('wheel', handleWheel);
       ro.disconnect();
     };
-  }, []);
+  }, [roomId, redraw]);
 
   // Helper to convert screen pixel to World unit (0-2000 range accounting for camera)
   const getCoords = (e: any) => {
@@ -176,6 +176,10 @@ export const useWhiteboard = (roomId: string | undefined, accessToken: string | 
   useEffect(() => {
     if (!roomId) return;
     setCurrentWhiteboardId(null);
+    
+    // 🚀 Fix: Immediately flush existing render-buffer to prevent "ghost trails"
+    allStrokesRef.current = [];
+    redraw();
 
     const init = async () => {
       try {
